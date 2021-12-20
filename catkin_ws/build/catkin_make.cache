@@ -1,0 +1,2 @@
+occupancy_map
+-DCATKIN_DEVEL_PREFIX=/home/banjo/autominy_slam/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/banjo/autominy_slam/catkin_ws/install -G Unix Makefiles

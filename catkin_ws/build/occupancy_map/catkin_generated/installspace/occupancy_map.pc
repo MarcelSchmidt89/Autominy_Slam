@@ -1,0 +1,8 @@
+prefix=/home/banjo/autominy_slam/catkin_ws/install
+
+Name: occupancy_map
+Description: Description of occupancy_map
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

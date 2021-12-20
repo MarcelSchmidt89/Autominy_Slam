@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/banjo/autominy_slam/catkin_ws/devel/setup.sh
