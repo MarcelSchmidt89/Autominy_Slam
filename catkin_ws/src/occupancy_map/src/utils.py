@@ -41,3 +41,64 @@ def get_map_orientation(ocmap):
 	(roll, pitch, yaw) = tf.transformations.euler_from_quaternion([map_orientation.x, map_orientation.y, map_orientation.z, map_orientation.w]) 
 	return yaw
 
+def angle_between_vectors(vector_1, vector_2):
+	unit_vector_1 = vector_1 / np.linalg.norm(vector_1)
+	unit_vector_2 = vector_2 / np.linalg.norm(vector_2)
+	dot_product = np.dot(unit_vector_1, unit_vector_2)
+
+	angle = np.arccos(dot_product)
+	return(angle)
+
+
+def read_record(file):
+
+	lines = file.readlines()
+
+
+    #print(line)
+
+	odoms = []
+	points = []
+
+	for line in lines:
+        
+		line2 = line.split(';')
+
+	    #print(line2)
+
+	    #str_odom.replace('[','')
+
+		str_odom = line2[0]
+		str_odom = str_odom.replace('[','')
+		str_odom = str_odom.replace(']','')
+	    #print(str_odom)
+		str_odom = str_odom.split()
+	    #print(str_odom)
+		np_odom = np.array(str_odom).astype(np.float)
+
+		odoms.append(np_odom)
+
+
+		str_points = line2[1]
+
+		#print(str_points)
+		str_points = str_points.replace('[','')
+		str_points = str_points.replace(']','')
+		str_points = str_points.split("), array(")
+		str_points[0] = str_points[0].replace('array(','')
+		str_points[len(str_points)-1] = str_points[len(str_points)-1].replace(')\n','')
+		#print(str_points[1])
+		#print("....")
+
+		rec_points = []
+
+		for pointstr in str_points:
+		    point_pair = pointstr.split(", ")
+		    rec_points.append(np.array(point_pair).astype(np.float))
+
+		#print(rec_points[1])
+
+		points.append(rec_points)
+
+	return(odoms,points)
+

@@ -94,12 +94,12 @@ def listener():
 
 
     # spin() simply keeps python from exiting until this node is stopped
-    rate = rospy.Rate(1) # 10hz
+    rate = rospy.Rate(10) # 10hz
 
 
     #wait for map
 
-    time.sleep(10)
+    time.sleep(1)
 
 
     map_angle = get_map_orientation(ocmap)
@@ -142,9 +142,6 @@ def listener():
 
 
     #particle_odoms[0] = particle_odom
-
-    best_particle = 0
-
     
 
 

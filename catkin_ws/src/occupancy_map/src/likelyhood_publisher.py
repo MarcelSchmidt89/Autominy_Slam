@@ -40,7 +40,7 @@ def listener():
     rospy.Subscriber("/sensors/map/", OccupancyGrid, map_callback)
 
     # spin() simply keeps python from exiting until this node is stopped
-    rate = rospy.Rate(10) # 10hz
+    rate = rospy.Rate(1) # 10hz
 
 
     #wait for map
