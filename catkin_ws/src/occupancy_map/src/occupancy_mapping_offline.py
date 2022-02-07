@@ -137,7 +137,7 @@ def listener():
 
                 car_point = transform_point(car_point, -m_odom[2], np.array([0,0]))
 
-                if(0.2 < np.linalg.norm(car_point) < 0.75) and (angle_between_vectors(car_point,np.array([1,0])) < 0.69) :
+                if(0.2 < np.linalg.norm(car_point) < 0.8) and (angle_between_vectors(car_point,np.array([1,0])) < 0.69) :
 
                 #if dist < 0.5:
 
