@@ -36,8 +36,8 @@ def get_odom_vector(odom):
 	return(np.array([pos[0],pos[1],yaw]))
 
 
-def get_map_orientation(ocmap):
-	map_orientation = ocmap.info.origin.orientation
+def get_map_orientation(ocmap_info):
+	map_orientation = ocmap_info.origin.orientation
 	(roll, pitch, yaw) = tf.transformations.euler_from_quaternion([map_orientation.x, map_orientation.y, map_orientation.z, map_orientation.w]) 
 	return yaw
 

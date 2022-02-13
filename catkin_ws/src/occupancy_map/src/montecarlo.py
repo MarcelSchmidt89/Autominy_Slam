@@ -102,7 +102,7 @@ def listener():
     time.sleep(1)
 
 
-    map_angle = get_map_orientation(ocmap)
+    map_angle = get_map_orientation(ocmap.info)
 
     likelyhood_grid = ocmap.data
 
