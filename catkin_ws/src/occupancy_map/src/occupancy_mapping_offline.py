@@ -45,21 +45,23 @@ def listener():
     # spin() simply keeps python from exiting until this node is stopped
     rate = rospy.Rate(1) # 10hz
 
-    map_pose = Pose()
-    map_pose.position.x = 9.0
-    map_pose.position.y = -2.15
-    map_pose.position.z = 0.0
-    map_pose.orientation.x = 0.0
-    map_pose.orientation.y = 0.0
-    map_pose.orientation.z = 0.7071066498756409
-    map_pose.orientation.w = 0.70710688829422
+    # map_pose = Pose()
+    # map_pose.position.x = 9.0
+    # map_pose.position.y = -2.15
+    # map_pose.position.z = 0.0
+    # map_pose.orientation.x = 0.0
+    # map_pose.orientation.y = 0.0
+    # map_pose.orientation.z = 0.7071066498756409
+    # map_pose.orientation.w = 0.70710688829422
 
-    #occu_map = ocmap
-    occu_map = OccupancyGrid();
-    occu_map.info.width = 860
-    occu_map.info.height = 1200
-    occu_map.info.resolution = 0.01
-    occu_map.info.origin = map_pose
+    # #occu_map = ocmap
+    # occu_map = OccupancyGrid();
+    # occu_map.info.width = 860
+    # occu_map.info.height = 1200
+    # occu_map.info.resolution = 0.01
+    # occu_map.info.origin = map_pose
+
+    occu_map = init_MapMsg()
 
 
     #wait for map

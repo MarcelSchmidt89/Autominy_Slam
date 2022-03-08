@@ -4,6 +4,7 @@ import ros_numpy
 import numpy as np
 import random
 from sensor_msgs.msg import PointCloud2
+from sensor_msgs.point_cloud2 import create_cloud_xyz32
 from nav_msgs.msg import OccupancyGrid, MapMetaData
 from geometry_msgs.msg import Pose
 from utils import pos_to_gridcell
@@ -84,7 +85,9 @@ def listener():
     # run simultaneously.
     rospy.init_node('listener', anonymous=True)
 
-    mg_pub = rospy.Publisher('/sensors/map2/', OccupancyGrid, queue_size=10)
+    #mg_pub = rospy.Publisher('/sensors/map2/', OccupancyGrid, queue_size=10)
+    cloud_pub = rospy.Publisher('sensors/slam_particles', PointCloud2, queue_size=10)
+    odom_pub = rospy.Publisher('sensors/slam_odom',Odometry, queue_size=10)
 
     rospy.Subscriber("/sensors/slam/likelyhoodmap/", OccupancyGrid, map_callback)
     rospy.Subscriber("/sensors/slam/cloud", PointCloud2, callback)
@@ -96,10 +99,13 @@ def listener():
     # spin() simply keeps python from exiting until this node is stopped
     rate = rospy.Rate(10) # 10hz
 
+    particle_cloud = PointCloud2()
+    particle_cloud.header.frame_id = 'map'
+
 
     #wait for map
 
-    time.sleep(1)
+    time.sleep(5)
 
 
     map_angle = get_map_orientation(ocmap.info)
@@ -114,7 +120,7 @@ def listener():
 
     particle_odoms = []
 
-    num_particles = 100
+    num_particles = 50
 
     odom_old = get_odom_vector(odom)
 
@@ -147,7 +153,9 @@ def listener():
 
     while not rospy.is_shutdown():
 
-
+        slam_odom_msg = Odometry()
+        slam_odom_msg.header.stamp = rospy.Time.now()
+        slam_odom_msg.header.frame_id = "odom"
 
         observations_copy = np.copy(observations)    
 
@@ -157,54 +165,78 @@ def listener():
 
         odom_new = get_odom_vector(odom)
 
-        if np.array_equal(odom_new, odom_old):
-            print("whoops!")
+        if True:
+            
 
-        for i in range(0,num_particles):
+            for i in range(0,num_particles):
 
-            particle_odoms[i] = sample_motion_model(get_motion_delta(odom_old,odom_new),particle_odoms[i])
-            particle_odom = particle_odoms[i]
+                particle_odoms[i] = sample_motion_model(get_motion_delta(odom_old,odom_new),particle_odoms[i])
+                particle_odom = particle_odoms[i]
 
-            particle_point = np.array([particle_odom[0],particle_odom[1]])
+                particle_point = np.array([particle_odom[0],particle_odom[1]])
 
-        #transform point from world to map
-        
+            #transform point from world to map
+            
 
-            point = np.rint(transform_point(np.array(particle_point*100),-map_angle,np.array([0.0,0.0])))
+                point = np.rint(transform_point(np.array(particle_point*100),-map_angle,np.array([0.0,0.0])))
 
-            gridtarget = int((point[1]+ocmap.info.height*0.75)*(ocmap.info.width))+int(point[0]+ocmap.info.width/4)
-            grid[gridtarget] = 0
+                gridtarget = int((point[1]+ocmap.info.height*0.75)*(ocmap.info.width))+int(point[0]+ocmap.info.width/4)
+                grid[gridtarget] = 0
 
-            prob = end_point_model(particle_odom, observations_copy, likelyhood_grid, map_angle, ocmap.info.height,ocmap.info.width)
+                prob = end_point_model(particle_odom, observations_copy, likelyhood_grid, map_angle, ocmap.info.height,ocmap.info.width)
 
-            particle_weights[i] = prob
+                particle_weights[i] = prob
 
-        
-        odom_old = odom_new
+            
+            odom_old = odom_new
 
-        weight_sum = sum(particle_weights)
+            weight_sum = sum(particle_weights)
 
-        if weight_sum > 0:
+            if weight_sum > 0:
 
-            particle_weights = particle_weights / weight_sum
+                particle_weights = particle_weights / weight_sum
 
-            n_eff = 1 / np.sum(np.square(particle_weights))
+                n_eff = 1 / np.sum(np.square(particle_weights))
 
-            if n_eff < (num_particles/4):
+                if n_eff < (num_particles/2):
 
-                rng = np.random.default_rng()      
+                    print(particle_odoms[0])
+                    print(particle_weights[0])
 
-                particle_odoms_indexes = np.random.choice(len(particle_odoms),num_particles,True,particle_weights)
+                    rng = np.random.default_rng()      
 
-                particle_odoms = np.take(particle_odoms,particle_odoms_indexes,0)
+                    particle_odoms_indexes = np.random.choice(len(particle_odoms),num_particles,True,particle_weights)
+
+                    particle_odoms = np.take(particle_odoms,particle_odoms_indexes,0)                    
+                    particle_weights = np.take(particle_weights,particle_odoms_indexes,0)
 
 
 
 
+
+        particles = []
+
+        for particle in particle_odoms:
+            particles.append(np.array([particle[0],particle[1],0.0]))
+
+
+        particle_cloud = create_cloud_xyz32(particle_cloud.header, particles)
+
+        index = np.argmax(particle_weights)
+        best_odom = particle_odoms[index]
+
+        odom_quat = tf.transformations.quaternion_from_euler(0,0,best_odom[2])
+
+
+
+        slam_odom_msg.pose.pose = Pose(Point(best_odom[0],best_odom[1],0),Quaternion(*odom_quat))
 
 
         likelymap_msg.data = grid
-        mg_pub.publish(likelymap_msg)
+        #mg_pub.publish(likelymap_msg)
+        cloud_pub.publish(particle_cloud)
+        odom_pub.publish(slam_odom_msg)
+
         rate.sleep()
 
 
