@@ -93,7 +93,7 @@ def Slam(particle_index):
     occupancy_grids[particle_index], grid = OccupancyGridMapping(occupancy_grids[particle_index], [], occupancy_map.info ,observations, particle_odom)
 
 
-    return particle_odoms[particle_index], particle_weights[particle_index],occupancy_grids[particle_index],likelyhood_grids[particle_index],observation_estimates
+    return particle_odoms[particle_index], particle_weights[particle_index],occupancy_grids[particle_index],likelyhood_grids[particle_index],observation_estimates[particle_index]
 
 
 
@@ -265,7 +265,7 @@ def listener():
             particles.append(np.array([particle[0],particle[1],0.0]))
 
         pc_msg = create_cloud_xyz32(pc_msg.header, particles)
-        obs_msg = create_cloud_xyz32(obs_msg.header, obs_cloud)
+
 
         index = np.argmax(particle_weights)
         best_odom = particle_odoms[index]
@@ -283,6 +283,8 @@ def listener():
 
         for obs in observation_estimates[index]:
             obs_cloud.append(np.array([obs[0],obs[1],0.0]))
+        obs_msg = create_cloud_xyz32(obs_msg.header, obs_cloud)
+
 
         #print(len(obs_cloud))
 
