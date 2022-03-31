@@ -19,32 +19,43 @@ import copy
 
 observations = []
 odom = Odometry()
+synched_odom = np.array([0.0,0.0,0.0])
+
 
 
 def callback(data):
     global observations
     global odom
+    global synched_odom
+
+    synched_odom = get_odom_vector(odom)
+
     tmp_observations = []
     points = ros_numpy.point_cloud2.pointcloud2_to_xyz_array(data)
-    rows = np.random.choice(points.shape[0] , 1000)
+    rows = np.random.choice(points.shape[0] , 2000)
     points_m = points[rows, :]
   
     for point in points_m:
-        tmp_observations.append(np.array([point[0],point[1]]))
+        if not ((0.41 < point[0] < 0.43) and (-0.12 < point[1] < 0.12)):
+            tmp_observations.append(np.array([point[0],point[1]]))
 
     observations = tmp_observations
+    
 
 
 def odom_callback(data):
     global odom
     global init_odom
+    
     odom = data
-    init_odom = True
+    
 
     
 def listener():
 
     global odom
+    global synched_odom
+    global observations
     
 
 
@@ -56,7 +67,7 @@ def listener():
     rospy.init_node('listener', anonymous=True)
 
     rospy.Subscriber("/sensors/slam/cloud", PointCloud2, callback)
-    rospy.Subscriber("/sensors/localization/filtered_map", Odometry, odom_callback)
+    rospy.Subscriber("/sensors/odometry/odom", Odometry, odom_callback)
 
 
 
@@ -68,24 +79,29 @@ def listener():
 
     #wait for map
 
-    m_odom = get_odom_vector(odom)
+
+
+    #m_odom = get_odom_vector(synched_odom)
 
 
     file = open('data', 'w')
-    file.write(str(m_odom)+";"+str(observations)+"\n")
+    file.write(str(synched_odom)+";"+str(observations)+"\n")
     file.close()
 
+    
     file2 = open('data', 'r')
 
 
     while not rospy.is_shutdown():
 
-        m_odom = get_odom_vector(odom)
+
+        #m_odom = get_odom_vector(synched_odom)
 
         file = open('data', 'a')
-        file.write(str(m_odom)+";"+str(observations)+"\n")
+        file.write(str(synched_odom)+";"+str(observations)+"\n")
         file.close()
-	
+
+
 
         # line = file2.readline()
 

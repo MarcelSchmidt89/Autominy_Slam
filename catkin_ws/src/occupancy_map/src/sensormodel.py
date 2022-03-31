@@ -9,7 +9,7 @@ def end_point_model(odometry, observations, likelyhoodmap, map_angle, map_height
 
 	for observation in observations:
 
-		if(np.linalg.norm(observation)<0.8):
+		if(np.linalg.norm(observation)<1.9):
 
 			particle_point = transform_point(observation, odometry[2], np.array([odometry[0],odometry[1]]))
 

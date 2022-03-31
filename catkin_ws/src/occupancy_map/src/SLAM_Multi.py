@@ -23,7 +23,7 @@ from threading import Thread
 from multiprocessing import Pool
 
 
-particles_amount = 64
+particles_amount = 32
 
 occupancy_map = init_MapMsg()
 likelyhood_map = init_MapMsg()
@@ -39,6 +39,7 @@ old_odom = np.array([0,0,0])
 new_odom = np.array([0,0,0])
 observations = []
 observation_estimates = []
+
 
 odom_records = []
 observation_records = []
@@ -79,6 +80,8 @@ def Slam(particle_index):
     particle_odom = particle_odoms[particle_index]
 
     particle_pose = np.array([particle_odom[0],particle_odom[1]])
+
+    #print(particle_odom)
 
     likelyhood_grids[particle_index], observation_estimates[particle_index] = update_likelyhoodmap(occupancy_grids[particle_index], likelyhood_grids[particle_index] ,likelyhood_map.info, particle_odom)
 
@@ -128,7 +131,7 @@ def listener():
     map_pub = rospy.Publisher('/sensors/slam_map/', OccupancyGrid, queue_size=10)
     map2_pub = rospy.Publisher('/sensors/slam_likelyhood/', OccupancyGrid, queue_size=10)
     cloud_pub = rospy.Publisher('sensors/slam_particles', PointCloud2, queue_size=10)
-    obs_pub = cloud_pub = rospy.Publisher('sensors/observation_estimates', PointCloud2, queue_size=10)
+    obs_pub = rospy.Publisher('sensors/observation_estimates', PointCloud2, queue_size=10)
     odom_pub = rospy.Publisher('sensors/slam_odom',Odometry, queue_size=10)
 
 
@@ -199,8 +202,8 @@ def listener():
 
     initial_grid, grid = OccupancyGridMapping(occupancy_grids[0], [], occupancy_map.info ,observation_records[0], odom_records[0])
     initial_grid, grid = OccupancyGridMapping(initial_grid, [], occupancy_map.info ,observation_records[0], odom_records[0])
-    #initial_grid, grid = OccupancyGridMapping(initial_grid, [], occupancy_map.info ,observation_records[0], odom_records[0])
-    #initial_grid, grid = OccupancyGridMapping(initial_grid, [], occupancy_map.info ,observation_records[0], odom_records[0])
+    initial_grid, grid = OccupancyGridMapping(initial_grid, [], occupancy_map.info ,observation_records[0], odom_records[0])
+    initial_grid, grid = OccupancyGridMapping(initial_grid, [], occupancy_map.info ,observation_records[0], odom_records[0])
     #initial_grid, grid = OccupancyGridMapping(initial_grid, [], occupancy_map.info ,observation_records[0], odom_records[0])
 
     for i in range(0,particles_amount):
@@ -258,7 +261,9 @@ def listener():
                 likelyhood_grids = np.take(likelyhood_grids, particle_odoms_indexes,0)
 
 
-                
+        
+        print(particle_weights)
+
         particles = []
 
         for particle in particle_odoms:

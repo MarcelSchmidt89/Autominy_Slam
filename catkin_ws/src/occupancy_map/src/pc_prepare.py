@@ -27,7 +27,7 @@ def listener():
 
     mg_pub = rospy.Publisher('/sensors/slam/cloud', PointCloud2, queue_size=10)
 
-    rospy.Subscriber("/sensors/road_marking_localization/aligned_pcl", PointCloud2, callback)
+    rospy.Subscriber("/sensors/road_marking_localization/cropped_pcl", PointCloud2, callback)
 
     tf_buffer = tf2_ros.Buffer()
     tf_listener = tf2_ros.TransformListener(tf_buffer)
